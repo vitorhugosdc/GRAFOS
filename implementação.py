@@ -53,6 +53,19 @@ class Aresta():
         self.capacity = kwargs.get('capacity', float('inf'))
         self.flow = 0
 
+def imprime_dist_pred(distancia,predecessores,tamanho):
+    for i in range(tamanho): ##printa matriz de distancias
+        for j in range(tamanho): ##colocar algum if distancia[i][j] == float('inf'), printa outra coisa pra sair certinho
+            print(f'{distancia[i][j]}\t', end='')
+        print()
+    print()
+    for i in range(tamanho): #printa matriz de predecessores
+        for j in range(tamanho):
+            print(f'{predecessores[i][j]}\t', end='')
+        print()
+    print() 
+
+
 def busca_em_largura(g, pai): ##########     BFS ############################################################################### MEXIDO
        
     Q = []
@@ -159,27 +172,7 @@ def floyd_warshall(vertices):
                 if distancia[i][j] > distancia[i][k] + distancia[k][j]: #funciona como um "relaxamento" só que da matriz
                     distancia[i][j] = distancia[i][k] + distancia[k][j]
                     predecessores[i][j] = predecessores[k][j]
-
-    for i in range(len(vertices)): ##printa matriz de distancias
-        for j in range(len(vertices)): ##colocar algum if distancia[i][j] == float('inf'), printa outra coisa pra sair certinho
-            print(f'{distancia[i][j]}\t', end='')
-        print()
-
-    print()
-    for i in range(len(vertices)): #printa matriz de predecessores
-        for j in range(len(vertices)):
-            print(f'{predecessores[i][j]}\t', end='')
-        print()
-    print()
-    # predecessores funciona assim:
-    # caso vc queria saber o caminho de menor distancia do vertice 0 ao 6
-    # vc olha predecessores[0][6] e ve que o valor eh 2,
-    # entao vc olha o menor caminho de 0 a 2, ou seja, predecessores[0][2] e ve que o valor eh 1,
-    # entao vc olha predecessores[0][1] e ve que o valor eh 0, que eh o vertice que queremos comecar
-    # logo temos o menor caminho de 0 ate 6, 0->1->2->6
-    # neste caso, menor caminho == menor custo
-
-    return distancia, predecessores
+    imprime_dist_pred(distancia,predecessores,len(vertices)) ##imprime as duas matrizes
 
 def prim(vertices, pai):
     print("Prim")
