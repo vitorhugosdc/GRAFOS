@@ -80,7 +80,7 @@ class Vertice():
                 return aresta
                 
 class Aresta(): #atributos de uma aresta
-    def __init__(self, distancia, peso, **capacidade):
+    def __init__(self, peso, distancia, **capacidade):
         self.peso = peso
         self.distancia = distancia
         self.fluxo = 0
@@ -103,7 +103,7 @@ def dijkstra(vertices, s):
         if vertice.distancia != float("inf"):
             print(f'distancia: {vertice.distancia}')
         else: #caso ainda tenha distancia com valor infinito
-            print(f'distancia: Nao tem!!!')
+            print(f'distancia: Nao ha como chegar a partir s !!!')
     print('\n')
 
 def busca_em_largura_para_ford_fulkerson(grafo, s, distancia):
@@ -164,7 +164,7 @@ def bellman_ford(vertices):
         if vertice.distancia != float("inf"): #se a distância do vértice for diferente de infinito printa a distância
             print(f'distancia: {vertice.distancia}')
         else: #caso ainda tenha distancia com valor infinito
-            print(f'distancia: Nao tem!!!')
+            print(f'distancia: Nao ha como chegar a partir de s !!!')
     print('\n')
 
 def relaxamento_floyd_warshall(distancias,predecessores,i,j,k): #é um "relaxamento" de elementos da matriz de distancias
@@ -182,7 +182,7 @@ def floyd_warshall(vertices):
         for j in range(len(vertices)):
             if i == j:
                 distancias[i][j] = 0 #se i for = j o peso será 0
-            elif vertices[i].aresta_do_vertice(vertices[j]): #se não, será o peso da aresta
+            elif vertices[i].aresta_do_vertice(vertices[j]): #se i != j e a aresta pertence ao vértice
                 distancias[i][j] = vertices[i].aresta_do_vertice(vertices[j]).peso ##distancia recebe o peso da aresta
             else:
                 distancias[i][j] = float('inf') #se i !=j e a aresta não pertence ao vértice
@@ -203,10 +203,10 @@ def prim(vertices):
         for j in range(len(vertices)):
             if arvore[j]:
                 for k in range(len(vertices)):
-                    if vertices[j].aresta_do_vertice(vertices[k] and arvore[k] == False): #se arvore[k] for falso e tiver a aresta
+                    if vertices[j].aresta_do_vertice(vertices[k]) and arvore[k] == False: #se arvore[k] for falso e tiver a aresta
                         if chave > vertices[j].aresta_do_vertice(vertices[k]).peso: #se o peso da chave for maior que a da aresta
                             chave = vertices[j].aresta_do_vertice(vertices[k]).peso #a chave passa a valer o novo peso
-                            s = j
+                            s = j #salva os índices 
                             a = k
         arvore[a] = True
         print(f'({vertices[s].indice} - {vertices[a].indice}), ', end="")
@@ -214,13 +214,13 @@ def prim(vertices):
 
 def main():
 
-    arestas = [(1,2, 20), (1,4, 15), (2,3, 7), (2,4, 8), (3,7, 18), (4,8, 33), (4,1, 6),(5,7, 9), (5,6, 17),(6,5, 33), (8,7, 20)]
+    arestas = [(1,2, 5), (1,4, 8), (2,7, 3), (3,6, 15), (4,5, 21), (4,6, 7), (5,7, 1),(2,5, 2), (1,6, 17),(7,6, 13), (3,4, 4)] #arestas do grafo
     vertices = []   
-    for i in range(8): #cria os vértices e coloca na lista vertices
+    for i in range(7): #cria os vértices e coloca na lista vertices
         vertice = Vertice(i+1)
         vertices.append(vertice)   
     for a, distancia, peso in arestas: #adiciona as arestas aos vértices
-        vertices[a-1].adjacente.append(Aresta(vertices[distancia-1], 1, capacidade=peso))
+        vertices[a-1].adjacente.append(Aresta(1,vertices[distancia-1], capacidade=peso))
     print("Busca em Largura: ")     
     inicializar(vertices)
     busca_em_largura(vertices, vertices[0])
