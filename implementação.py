@@ -1,3 +1,22 @@
+class Aresta(): #Classe para representar uma Aresta
+    def __init__(self, peso, distancia, **capacidade):
+        self.peso = peso
+        self.distancia = distancia
+        self.fluxo = 0
+        self.capacidade = capacidade.get('capacidade', float('inf'))
+        self.indice = 0
+
+class Vertice(): #Classe para representar um Vértice
+    def __init__(self, indice): #atributos de um vértice
+        self.s = None
+        self.visitado = False        
+        self.indice = indice
+        self.distancia = float('inf')
+        self.adjacente = []        
+    def aresta_do_vertice(self, distancia): #encontra aresta do vértice
+        for aresta in self.adjacente:
+            if aresta.distancia == distancia:
+                return aresta
 def inicializar(vertices): #inicializa os vértices
         for vertice in vertices:
             vertice.distancia = float('inf')
@@ -66,27 +85,6 @@ def busca_em_profundidade(grafo, s):
         s.visitado = True #marca o s como visitado
     print('\n')
 
-class Vertice():
-    def __init__(self, indice): #atributos de um vértice
-        self.s = None
-        self.visitado = False        
-        self.indice = indice
-        self.distancia = float('inf')
-        self.adjacente = []
-        
-    def aresta_do_vertice(self, distancia): #encontra aresta do vértice
-        for aresta in self.adjacente:
-            if aresta.distancia == distancia:
-                return aresta
-                
-class Aresta(): #atributos de uma aresta
-    def __init__(self, peso, distancia, **capacidade):
-        self.peso = peso
-        self.distancia = distancia
-        self.fluxo = 0
-        self.capacidade = capacidade.get('capacidade', float('inf'))
-        self.indice = 0
-
 def dijkstra(vertices, s): 
     Lista = [] #fila
     Lista.append(s)
@@ -105,6 +103,22 @@ def dijkstra(vertices, s):
         else: #caso ainda tenha distancia com valor infinito
             print(f'distancia: Nao ha como chegar a partir s !!!')
     print('\n')
+
+def ordenacao_topologica(grafo): #ordena topologicamente os elementos de um grafo
+    ordem = []
+    graus_entrada = [0 for i in range(len(grafo))]
+    for vertice in grafo:
+        for h in range(len(grafo)):
+            graus_entrada[h] += 1
+    fila = [vertice for vertice in range(len(grafo)) if graus_entrada[vertice] == 0]
+    while fila:
+        vertice = fila.pop()
+        ordem.append(vertice)
+        for vizinho in grafo.adj:
+            graus_entrada[vizinho] -= 1
+            if graus_entrada[vizinho] == 0:
+                fila.append(vizinho)
+    return ordem
 
 def busca_em_largura_para_ford_fulkerson(grafo, s, distancia):
     inicializar(grafo)
@@ -143,7 +157,7 @@ def ford_fulkerson(fonte, sumidouro, vertices):
                 saida.append(extraido.s.aresta_do_vertice(extraido))
                 extraido = extraido.s
         menorCaminho = saida[0]
-        for aresta in saida:
+        for aresta in saida: #busca o menor caminho
             if  menorCaminho.capacidade > aresta.capacidade:
                 menorCaminho = aresta
         y = menorCaminho.capacidade
@@ -213,14 +227,13 @@ def prim(vertices):
     print('\n')
 
 def main():
-
     arestas = [(1,2, 5), (1,4, 8), (2,7, 3), (3,6, 15), (4,5, 21), (4,6, 7), (5,7, 1),(2,5, 2), (1,6, 17),(7,6, 13), (3,4, 4)] #arestas do grafo
     vertices = []   
     for i in range(7): #cria os vértices e coloca na lista vertices
         vertice = Vertice(i+1)
         vertices.append(vertice)   
     for a, distancia, peso in arestas: #adiciona as arestas aos vértices
-        vertices[a-1].adjacente.append(Aresta(1,vertices[distancia-1], capacidade=peso))
+        vertices[a-1].adjacente.append(Aresta(1,vertices[distancia-1], capacidade=peso)) #precisei de ajuda pra conseguir implementar essa parte
     print("Busca em Largura: ")     
     inicializar(vertices)
     busca_em_largura(vertices, vertices[0])
@@ -239,7 +252,7 @@ def main():
 
     print("Ford-Fulkerson")
     inicializar(vertices)
-    ford_fulkerson(vertices[0], vertices[6], vertices)
+    ford_fulkerson(vertices[0], vertices[6], vertices) #recebe o primeiro e o último vértice
 
     print("Floyd-Warshall")
     floyd_warshall(vertices)
