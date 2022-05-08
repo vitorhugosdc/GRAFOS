@@ -26,7 +26,7 @@ class Vertice():
         #self.pm_distancia = float('inf')
 
         # ford_fulkerson
-        #self.ff_pai = None
+        #self.pai = None
 
 
     def __str__(self):
@@ -50,16 +50,16 @@ class Aresta():
     def __init__(self, distancia, peso, **kwargs):
         self.distancia = distancia
         self.peso = peso
-        self.capacity = kwargs.get('capacity', float('inf'))
+        self.capacidade = kwargs.get('capacidade', float('inf'))
         self.flow = 0
 
 def imprime_dist_pred(distancia,predecessores,tamanho):
-    for i in range(tamanho): ##printa matriz de distancias
+    for i in range(tamanho): ##printa arvore de distancias
         for j in range(tamanho): ##colocar algum if distancia[i][j] == float('inf'), printa outra coisa pra sair certinho
             print(f'{distancia[i][j]}\t', end='')
         print()
     print()
-    for i in range(tamanho): #printa matriz de predecessores
+    for i in range(tamanho): #printa arvore de predecessores
         for j in range(tamanho):
             print(f'{predecessores[i][j]}\t', end='')
         print()
@@ -80,7 +80,7 @@ def busca_em_largura(g, pai): ##########     BFS ###############################
                 aresta.distancia.pai = pai
                 Q.append(aresta.distancia) #coloca na fila
                 aresta.distancia.visitado = True
-                print(f'-> {aresta.distancia.indice} ', end='')
+                print(f'- {aresta.distancia.indice} ', end='')
         if len(Q) == 0:
             for vertice in g:
                 if vertice.visitado == False:
@@ -103,7 +103,7 @@ def busca_em_profundidade(g, pai): ########## DFS ##############################
                 Q = [aresta.distancia] + Q
                 aresta.distancia.pai = pai
                 aresta.distancia.visitado = True
-                print(f'-> {aresta.distancia.indice} ', end='')
+                print(f'- {aresta.distancia.indice} ', end='')
         if len(Q) == 0:
             for vertice in g:
                 if vertice.visitado == False:
@@ -113,17 +113,17 @@ def busca_em_profundidade(g, pai): ########## DFS ##############################
     print('\n')
 
 
-def relaxamento(u, v, peso): ############################################################################### MEXIDO
-    if  v.distancia > u.distancia + peso:
-        v.distancia = u.distancia + peso
-        v.pai = u
+def relaxamento(u, vertice, peso): ############################################################################### MEXIDO
+    if  vertice.distancia > u.distancia + peso:
+        vertice.distancia = u.distancia + peso
+        vertice.pai = u
 
 def bellman_ford(vertices, pai): ############################################################################### MEXIDO
     for vertice in vertices[:-1]: #relaxa todos os vértices do grafo
         for aresta in vertice.adj:
             relaxamento(vertice, aresta.distancia, vertice.aresta_do_vertice(aresta.distancia).peso)
     for vertice in vertices:
-        print(f'{vertice.indice} -> ', end='')
+        print(f'{vertice.indice} - ', end='')
         if vertice.distancia != float("inf"):
             print(vertice.distancia)
         else: #caso ainda tenha distancia com valor infinito
@@ -134,15 +134,15 @@ def dijkstra(vertices, pai):
     Q = []
     Q.append(pai)
     while len(Q) != 0:
-        p = Q.pop(0)
-        p.visitado = True
-        for aresta in p.adj:
+        extraido = Q.pop(0)
+        extraido.visitado = True
+        for aresta in extraido.adj:
             if aresta.distancia.visitado == False:
                 Q.append(aresta.distancia)
                 aresta.distancia.visitado = True
-            relaxamento(p, aresta.distancia, aresta.peso)
+            relaxamento(extraido, aresta.distancia, aresta.peso)
     for vertice in vertices:
-        print(f'{vertice.indice} -> ', end='')
+        print(f'{vertice.indice} - ', end='')
         if vertice.distancia != float("inf"):
             print(vertice.distancia)
         else: #caso ainda tenha distancia com valor infinito
@@ -151,110 +151,82 @@ def dijkstra(vertices, pai):
 # nao funciona com grafo nao orientado com valores negativos
 # mas funciona com grafo orientado com valores negativos
 def floyd_warshall(vertices):
-    distancia = [[0 for i in range(len(vertices))]for j in range(len(vertices))] #cria a matriz de distâncias
-    predecessores = [[0 for i in range(len(vertices))]for j in range(len(vertices))]   #cria a matriz de predecessores
+    distancias = [[0 for i in range(len(vertices))]for j in range(len(vertices))] #cria a arvore de distâncias
+    predecessores = [[0 for i in range(len(vertices))]for j in range(len(vertices))]   #cria a arvore de predecessores
     for i in range(0, len(vertices)): ##preenche as matrizes com infinito
         for j in range(0, len(vertices)):
-            distancia[i][j] = float('inf')
-            predecessores[i][j] = float('inf')
-            
+            distancias[i][j] = float('inf')
+            predecessores[i][j] = float('inf')            
     for i in range(len(vertices)):
         for j in range(len(vertices)):
             if i == j:
-                distancia[i][j] = 0 #se i for = j o peso será 0
+                distancias[i][j] = 0 #se i for = j o peso será 0
             elif vertices[i].aresta_do_vertice(vertices[j]):
-                distancia[i][j] = vertices[i].aresta_do_vertice(vertices[j]).peso ##distancia recebe o peso da aresta
-            predecessores[i][j] = i #a matriz de predecessores recebe i
-
-    for i in range(len(vertices)): ##busca o menor caminho e atualiza a lista de distância e predecessores
+                distancias[i][j] = vertices[i].aresta_do_vertice(vertices[j]).peso ##distancia recebe o peso da aresta
+            predecessores[i][j] = i #a arvore de predecessores recebe i
+    for i in range(len(vertices)): #busca o menor caminho e atualiza a lista de distância e predecessores
         for j in range(len(vertices)):
             for k in range(len(vertices)): 
-                if distancia[i][j] > distancia[i][k] + distancia[k][j]: #funciona como um "relaxamento" só que da matriz
-                    distancia[i][j] = distancia[i][k] + distancia[k][j]
+                if distancias[i][j] > distancias[i][k] + distancias[k][j]: #funciona como um "relaxamento" só que da arvore
+                    distancias[i][j] = distancias[i][k] + distancias[k][j]
                     predecessores[i][j] = predecessores[k][j]
-    imprime_dist_pred(distancia,predecessores,len(vertices)) ##imprime as duas matrizes
+    imprime_dist_pred(distancias,predecessores,len(vertices)) #imprime as duas matrizes
 
-def prim(vertices, pai):
-    print("Prim")
-    for v in vertices:
-        v.pm_distancia = float('inf')
-        v.pm_pai = None
-        v.visitado = False
-
-    v = len(vertices)
-    noEdge = 0
-    selected = [0]*v
-    selected[0] = True
-    
-    l = []
-
-    while noEdge < v-1:
-        minimum = float('inf')
-        x, y = 0, 0
-        for i in range(v):
-            if selected[i] == True:
-                for j in range(v):
-                    if not selected[j] and vertices[i].aresta_do_vertice(vertices[j]):
-                        if vertices[i].aresta_do_vertice(vertices[j]).peso < minimum:
-                            minimum = vertices[i].aresta_do_vertice(vertices[j]).peso
-                            x = i
-                            y = j
-
-
-        print(f'{vertices[x].indice} -> {vertices[y].indice}')
-        selected[y] = True
-        if vertices[x] not in l:
-            l.append(vertices[x])
-        if vertices[y] not in l:
-            l.append(vertices[y])
-        noEdge+=1
+def printa_prim(l): #imprimir a prim
+    Q = []
     for i in range(len(l)):
-        print(f'{l[i].indice} ', end='')
-    print()
-    return l
+        if l[i].indice not in Q:
+            print(f'{l[i].indice} ', end='')
+            Q.append(l[i].indice)
 
-def ff_bfs(g, pai, distancia):
-    print("FF-BFS")
-    for v in g:
-        v.visitado = False
-        v.ff_pai = None
+def prim(vertices):
+    arvore = [0 for i in range(len(vertices))]
+    arvore[0] = True    
+    saida = []
+    for i in range(len(vertices)-1): #todos os vértices
+        chave, pai , b = float('inf'), 0 , 0
+        for j in range(len(vertices)):
+            if arvore[j] == True:
+                for k in range(len(vertices)):
+                    if not arvore[k] and vertices[j].aresta_do_vertice(vertices[k]): #se arvore[k] for falso e tiver a aresta
+                        if vertices[j].aresta_do_vertice(vertices[k]).peso < chave: #se a aresta do vértice tiver peso menor que a chave
+                            chave = vertices[j].aresta_do_vertice(vertices[k]).peso #a chave passa a valer o novo peso
+                            pai = j
+                            b = k
+        arvore[b] = True
+        saida.extend([vertices[pai],vertices[b]])
+        print(f'{vertices[pai].indice} - {vertices[b].indice}')
+    printa_prim(saida)
+    print('\n')
 
-    q = []
-    seq = []
-
-    q.append(pai)
-    seq.append(pai)
-
-    print(f'Comecou em {pai.indice}')
-
-    while q != []:
-        p = q.pop(0)
-        p.visitado = True  
-
-        for aresta in p.adj:
-            if not aresta.distancia.visitado and aresta.capacity > 0:
-                aresta.distancia.ff_pai = p
-                print(f'{p.indice} -> {aresta.distancia.indice}')
-                q.append(aresta.distancia)
-                seq.append(aresta.distancia)
-                aresta.distancia.visitado = True
-                # print(f'-> {aresta.distancia.indice} ', end='')
-        # if q == []:
-        #     for v in g:
-        #         if v.visitado == False:
-        #             q.append(v)
-        #             break
-
-    
-    if pai not in seq or distancia not in seq:
+def busca_em_largura_para_ford_fulkerson(g, pai, distancia):
+    print("\nFF-BFS\n")
+    for vertice in g: ######## inicializar
+        vertice.visitado = False
+        vertice.pai = None
+    Q = []
+    saida = []
+    Q.append(pai)
+    saida.append(pai)
+    while len(Q) != 0:
+        extraido = Q.pop(0)
+        extraido.visitado = True
+        for aresta in extraido.adj: #pra cada aresta adj ao elemento extraido da fila
+            if aresta.distancia.visitado != True and aresta.capacidade > 0: #se a aresta ainda n foi visitada e sua capacidade for maior que 0
+                aresta.distancia.pai = extraido #pai da aresta se torna o elemento extraido
+                Q.append(aresta.distancia) #coloca na fila a distancia da aresta
+                saida.append(aresta.distancia) #coloca na lista de saída a distancia
+                aresta.distancia.visitado = True #marca a aresta como visitada    
+                print(f'{extraido.indice} - {aresta.distancia.indice}')
+    if pai not in saida or distancia not in saida:
         print(f"sem caminho de {pai.indice} ate {distancia.indice}")
         return None
 
     print(f'\nSequencia de visita em lista: ')
-    for v in seq:
-        print(v.indice, end=" ") 
+    for vertice in saida:
+        print(vertice.indice, end=" ") 
     print('\n')
-    return seq
+    return saida
 # update_flow recebe a lista de arestas de s a t no grafo
 # para cada aresta na lista, atualiza o fluxo de s a t
 # acha a aresta com menor capacidade e atualiza o fluxo das outros baseadas nesse vaor
@@ -262,33 +234,34 @@ def ff_bfs(g, pai, distancia):
 def update_flow(arestas):
     menor = arestas[0]
     for aresta in arestas:
-        if aresta.capacity < menor.capacity:
+        if aresta.capacidade < menor.capacidade:
             menor = aresta
-    temp = menor.capacity
+    temp = menor.capacidade
     for aresta in arestas:
-        print(f' -> {aresta.distancia.indice}  cap of {aresta.capacity}')
-        aresta.capacity -= temp
+        print(f' - {aresta.distancia.indice}  cap of {aresta.capacidade}')
+        aresta.capacidade -= temp
     return temp
+
 def ford_fulkerson(vertices, s, t):
     print("Ford-Fulkerson")
     print(f'comeco: {s.indice}   fim: {t.indice}')
 
-    for v in vertices:
-        v.ff_pai = None
-        v.visitado = False
+    for vertice in vertices:
+        vertice.pai = None
+        vertice.visitado = False
 
     # printa as arestas e a capacidade de cada uma
-    for v in vertices:
-        for aresta in v.adj:
-            print(f'{v.indice} -> {aresta.distancia.indice} with {aresta.capacity}')
+    for vertice in vertices:
+        for aresta in vertice.adj:
+            print(f'{vertice.indice} - {aresta.distancia.indice} with {aresta.capacidade}')
 
     max_flow = 0
     
-    # ff_bfs para encontrar o caminho de s a t
+    # busca_em_largura_para_ford_fulkerson para encontrar o caminho de s a t
     # caso nao exista um caminho de s a t retorna None
     # para percorer pelo caminnho comecamos de t e voltamos a s, 
-    # usnado o atributo ff_pai para saber o pai do vertice
-    vef = ff_bfs(vertices, s, t)
+    # usnado o atributo pai para saber o pai do vertice
+    vef = busca_em_largura_para_ford_fulkerson(vertices, s, t)
     while vef != None:
 
         # c guarda as arestas que estao no caminho de s a t
@@ -296,18 +269,18 @@ def ford_fulkerson(vertices, s, t):
         
         # percore o caminho reverso, de t ate s, adicionando
         # as arestas no caminho para 'c'        
-        p = t
-        while p.ff_pai != None:
-                c.append(p.ff_pai.aresta_do_vertice(p))
-                p = p.ff_pai
+        extraido = t
+        while extraido.pai != None:
+                c.append(extraido.pai.aresta_do_vertice(extraido))
+                extraido = extraido.pai
         
         max_flow += update_flow(c)
 
-        for v in vertices:
-            for aresta in v.adj:
-                print(f'{v.indice} -> {aresta.distancia.indice} with {aresta.capacity}')
+        for vertice in vertices:
+            for aresta in vertice.adj:
+                print(f'{vertice.indice} - {aresta.distancia.indice} with {aresta.capacidade}')
 
-        vef = ff_bfs(vertices, s, t)
+        vef = busca_em_largura_para_ford_fulkerson(vertices, s, t)
     print(f'flow maximo = {max_flow}')
     return max_flow
 
@@ -337,12 +310,12 @@ def main():
                (8,7, 20)]
 
     for i in range(lenv):
-        v = Vertice(i+1)
-        vertices.append(v)
+        vertice = Vertice(i+1)
+        vertices.append(vertice)
    
     #para ford_fulkerson
     for src, distancia, c in arestas:
-        vertices[src-1].adj.append(Aresta(vertices[distancia-1], 1, capacity=c))
+        vertices[src-1].adj.append(Aresta(vertices[distancia-1], 1, capacidade=c))
 
     # orientado
     # for src, distancia, peso in arestas:
@@ -355,15 +328,15 @@ def main():
 
     print(vertices[0].indice)
 
-    for v in vertices: ##sempre pra busca em largura e profundidade
-        v.visitado = False
-        v.pai = None
+    for vertice in vertices: ##sempre pra busca em largura e profundidade
+        vertice.visitado = False
+        vertice.pai = None
 
     print("Busca em Largura: ")     
     busca_em_largura(vertices, vertices[0])
-    for v in vertices: ##sempre pra busca em largura e profundidade
-        v.visitado = False
-        v.pai = None
+    for vertice in vertices: ##sempre pra busca em largura e profundidade
+        vertice.visitado = False
+        vertice.pai = None
     print("Busca em Profundidade: ")
     busca_em_profundidade(vertices, vertices[0])
 
@@ -374,19 +347,25 @@ def main():
     print("Bellman-Ford")
     bellman_ford(vertices, vertices[0])
 
+    print("Dijkstra")  
     for vertice in vertices:
         vertice.distancia = float('inf')
         vertice.pai = None
         vertice.visitado = False
     vertices[0].distancia = 0
-    print("Dijkstra")  
     dijkstra(vertices, vertices[0])
 
     print("Floyd-Warshall")
     floyd_warshall(vertices)
 
+    print("Prim")
+    for vertice in vertices:
+        vertice.distancia = float('inf')
+        vertice.pai = None
+        vertice.visitado = False
+    prim(vertices)
 
-    prim(vertices, vertices[0])
+
     ford_fulkerson(vertices, vertices[0], vertices[6])
 
 if __name__ == "__main__":
